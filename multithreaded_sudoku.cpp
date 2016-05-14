@@ -36,7 +36,7 @@ mutex solveMutex;
 
 void mPrintSolution(const int grid[NROWS][NCOLS]) {
 	{
-		lock_guard<mutex> myLock(myMutex);
+		//lock_guard<mutex> myLock(myMutex);
 		cout << "Solution: " << endl;
 		mPrintGrid(grid);
 	}
@@ -102,13 +102,11 @@ void mPrintGrid(const int grid[NROWS][NCOLS]) {
 	}
 }
 
-bool mFindLocation(int &row,int &col,const vector<pair<int,int>> &mUnassignedCells,const int mUnassignedCellsPlace) {
+void mFindLocation(int &row,int &col,const vector<pair<int,int>> &mUnassignedCells,const int mUnassignedCellsPlace) {
 	if (mUnassignedCellsPlace < mUnassignedCells.size()) {
 		row = mUnassignedCells[mUnassignedCellsPlace].first;
 		col = mUnassignedCells[mUnassignedCellsPlace].second;
-		return true;
-	}
-	return false;
+	} else solved = true;
 }
 
 void trueSolve(int mGrid[NROWS][NCOLS], int mUnassignedCellsPlace) {
@@ -117,7 +115,7 @@ void trueSolve(int mGrid[NROWS][NCOLS], int mUnassignedCellsPlace) {
 	int row, col;
 	if (!solved) {
 		//find acceptable location
-		solved = !mFindLocation(row,col,unassignedCells, mUnassignedCellsPlace);
+		mFindLocation(row,col,unassignedCells, mUnassignedCellsPlace);
 		/*{
 			lock_guard<mutex> myLock(myMutex);
 			cerr << this_thread::get_id() << " solved " <<solved <<" up = " << mUnassignedCellsPlace<< endl;
@@ -128,9 +126,6 @@ void trueSolve(int mGrid[NROWS][NCOLS], int mUnassignedCellsPlace) {
 			{
 				lock_guard<mutex> myLock(myMutex);
 				cerr << "This is solved " << solved << " " << mUnassignedCellsPlace << endl;
-			}
-			{
-				lock_guard<mutex> myLock(solveMutex);
 				if (solved && mUnassignedCellsPlace >= unassignedCells.size() ) {
 					//race cond: sae solution at same time?
 					mPrintSolution(mGrid);
@@ -149,13 +144,13 @@ void trueSolve(int mGrid[NROWS][NCOLS], int mUnassignedCellsPlace) {
 			//cerr <<"    in " << row << " " << col << " " << num << endl;
 			trueSolve(mGrid, mUnassignedCellsPlace+1);
 			if (solved)return;
-			//printGrid();
+			//mPrintGrid(mGrid);
 			mGrid[row][col] = UNASSIGNED;
 		}
 	}
 }
 
-void mSolveHelper(int mGrid[NROWS][NCOLS]) {
+void mSolveHelper(int mGrid[][NCOLS]) {
 	//initialize local shit 
 	trueSolve(mGrid,1);
 }
@@ -215,6 +210,7 @@ bool isValid(int row, int col, int num) {
 ////////////////////////END SINGLE THREADED/////////////////////////////////////////
 
 //if not solved
+int mGrid[NROWS][NROWS][NCOLS];
 void solveIt() {	
 	int row, col;
 	if (!solved) {
@@ -222,27 +218,35 @@ void solveIt() {
 		row = unassignedCells[0].first;
 		col = unassignedCells[0].second;
 
+		int place = 0;
 		vector<thread> threads;
 		for(int i=1;i<=9;++i) {
 			if (isValid(row,col,i)) {
 				grid[row][col] = i;
 				//int ** mGrid= new int*[NROWS];
 				//for(int i=0;i<NROWS;++i) mGrid[i] = new int[NCOLS];
-				int mGrid[NROWS][NCOLS];
-				memcpy(mGrid,grid,sizeof(grid));
+				//int mGrid[NROWS][NCOLS];
+				memcpy(mGrid[place],grid,sizeof(grid));
+				/*
 				{
 					lock_guard<mutex> myLock(myMutex);
 					cerr << i << " at " << row << " " << col << endl;
 				}
-				thread t = thread(mSolveHelper,mGrid);
+				*/
+				//mPrintGrid(mGrid[place]);
+				//break;
+				thread t = thread(mSolveHelper,mGrid[place]);
 				threads.emplace_back(move(t));
 				//grid[row][col] = UNASSIGNED;
+				place++;
 			}
 		}
+		/*
 		{
 			lock_guard<mutex> myLock(myMutex);
 			cerr << "nthreads "<< threads.size() << endl;
 		}
+		*/
 		for(auto &t:threads) t.join();
 		cout.flush();
 		cerr << "done" << endl;
@@ -254,8 +258,8 @@ void multithreadedSolve() {
 }
 
 int main() {
-	string s = grid2;
-	while (cin >> s) {
+	string s = newHard;
+	//while (cin >> s) {
 		unassignedCells.clear();
 		unassignedCellsPlace = 0;
 		solved = false;
@@ -278,7 +282,8 @@ int main() {
 			cout << "\n";
 		}
 		multithreadedSolve();
-	}
+		cout << "All done after multi" << endl;
+	//}
 	return 0;
 }
 

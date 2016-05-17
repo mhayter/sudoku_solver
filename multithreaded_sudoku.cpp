@@ -30,6 +30,7 @@ string easy1 = "3065084005200000000870000310030100809008630050500906001300002500
 string grid2 = "4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......";
 string grid3 = "........................................................................987654321";
 string newHard = "85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.";
+string otherHard = "....376.....6...9...8.....4.9......16.......93......4.7.....8...1...9.....254....";
 
 mutex myMutex;
 mutex solveMutex;
@@ -258,7 +259,7 @@ void multithreadedSolve() {
 }
 
 int main() {
-	string s = newHard;
+	string s = otherHard;
 	//while (cin >> s) {
 		unassignedCells.clear();
 		unassignedCellsPlace = 0;
@@ -277,9 +278,9 @@ int main() {
 				if (grid[i][j]==UNASSIGNED) {
 					unassignedCells.push_back(make_pair(i,j));
 				}
-				cout << grid[i][j] << " ";
+				//cout << grid[i][j] << " ";
 			}
-			cout << "\n";
+			//cout << "\n";
 		}
 		multithreadedSolve();
 		cout << "All done after multi" << endl;

@@ -72,8 +72,10 @@ void backTrack(int i) {
 }
 
 string newHard = "85...24..72......9..4.........1.7..23.5...9...4...........8..7..17..........36.4.";
-
+string otherHard = "....376.....6...9...8.....4.9......16.......93......4.7.....8...1...9.....254....";
 int main() {
+	string s = otherHard;
+
 	rep(i, 10) pos[BIT(i)] = i;
 	int cases, caseNo = 0;
 	//for (scanf(" %d ", &cases); cases--; ) {
@@ -84,8 +86,8 @@ int main() {
 		rep(i, n*n) {
 			int r = i / n;
 			int c = i % n;
-			if (isdigit(newHard[i])) {
-				int x = BIT(newHard[i] - '1');
+			if (isdigit(s[i])) {
+				int x = BIT(s[i] - '1');
 				row[r] &= ~x;
 				col[c] &= ~x;
 				
@@ -94,13 +96,19 @@ int main() {
 			else cell.pb(ii(r, c));
 		}
 		found = false;
+		int r = cell[0].first;
+		int c = cell[0].second;
+
+	    int avail = row[r] & col[c] & reg[r/3][c/3];
+
+		cout << "myRow " << cell[0].first << " myCol " << cell[0].second << " avail = " << avail << endl;
 		reverse(all(cell));
 		if (cell.size()) backTrack(0);
 		printf("Case %d:\n", ++caseNo);
 		rep(i, n*n) {
 			int r = i/n;
 			int c = i%n;
-			if (isdigit(newHard[i])) {putchar(newHard[i]);}
+			if (isdigit(s[i])) {putchar(s[i]);}
 			else putchar(pos[res[r][c]] + 49);
 
 			//else putchar('*');
